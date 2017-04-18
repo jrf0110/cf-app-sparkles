@@ -1,0 +1,30 @@
+{
+  "resources": {
+    "head": [
+      {
+        "type": "script",
+        "src": "./cf-app-sparkle.js"
+      }
+    ]
+  },
+  "preview": {
+    "handlers": [
+      {
+        "options": ["*"],
+        "execute": "INSTALL_SCOPE.setOptions(INSTALL_OPTIONS)"
+      }
+    ]
+  },
+  "options": {
+    "properties": {
+      "numSparkles": {
+        "default": 20,
+        "title": "Number of Objects",
+        "description": "This indicates how many objects you should have at any given time",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 500
+      }
+    }
+  }
+}
