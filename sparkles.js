@@ -35,6 +35,7 @@
 
   function CursorSparkler(options) {
     options = options || {}
+    options.mode = options.mode || CursorSparkler.modes.trail
     options.numSparkles = options.numSparkles || 20
     options.sparkleFactor = 1
     options.sparkleDurationRange = [50, 500]
@@ -44,8 +45,8 @@
     this.window = options.window
     this.el = this.window.document.createElement('div')
     this.el.style.position = 'absolute'
-    this.el.style.top = '0'
-    this.el.style.left = '0'
+    this.el.style.top = '-1px'
+    this.el.style.left = '-1px'
     this.el.style.zIndex = 10000
     this.el.style.pointerEvents = 'none'
     this.el.style.width = '1px'
@@ -59,6 +60,9 @@
     this.onMouseUp = this.onMouseUp.bind(this)
     this.onAnimationFrame = this.onAnimationFrame.bind(this)
   }
+
+  CursorSparkler.modes = { follow: 'follow', trail: 'trail' }
+  CursorSparkler.TranslateZero = 'translate3d(0, 0, 0)'
 
   CursorSparkler.prototype.listen = function() {
     this.window.addEventListener('mousemove', this.onMouseMove)
@@ -75,8 +79,30 @@
   }
 
   CursorSparkler.prototype.render = function(time) {
-    this.el.style.transform = 'translate3d(' + this.x + 'px, ' + this.y + 'px, 0)'
+    if (this.options.disabled) {
+      if (this.el.style.display !== 'none') this.el.style.display = 'none'
+      return
+    } else {
+      if (this.el.style.display !== 'block') this.el.style.display = 'block'
+    }
+
+    if (this.options.mode === CursorSparkler.modes.follow) {
+      this.el.style.transform = 'translate3d(' + this.x + 'px, ' + this.y + 'px, 0)'
+    } else {
+      if (this.el.style.transform !== CursorSparkler.TranslateZero) {
+        this.el.style.transform = CursorSparkler.TranslateZero
+      }
+    }
+
     var numSparkles = this.options.numSparkles
+
+    if (this.sparkles.length > numSparkles) {
+      this.sparkles.slice(numSparkles).forEach(function(sparkle) {
+        sparkle.destroy()
+      })
+
+      this.sparkles.length = numSparkles
+    }
 
     for (var i = 0, sparkle; i < numSparkles; i++) {
       sparkle = this.sparkles[i]
@@ -109,6 +135,8 @@
     return new Sparkle({
       window: this.window,
       startTime: startTime,
+      startX: options.mode === CursorSparkler.modes.trail ? this.x : 0,
+      startY: options.mode === CursorSparkler.modes.trail ? this.y : 0,
       duration: getRandomInt(sDuration[0], sDuration[1] / sf),
       distance: getRandomInt(sDistance[0], sDistance[1] * (sf === 1 ? 1 : sf / 4)),
       size: getRandomInt(sSize[0], sSize[1] * (sf === 1 ? 1 : sf / 3))
@@ -121,11 +149,18 @@
   }
 
   CursorSparkler.prototype.onMouseDown = function(e) {
-    this.options.sparkleFactor *= 5
+    if (!this.originalSparkleFactor) {
+      this.originalSparkleFactor = this.options.sparkleFactor
+    } else {
+      this.options.sparkleFactor = this.originalSparkleFactor
+    }
+
+    this.options.sparkleFactor *= 4
   }
 
   CursorSparkler.prototype.onMouseUp = function(e) {
-    this.options.sparkleFactor /= 5
+    this.options.sparkleFactor = this.originalSparkleFactor || 1
+    delete this.originalSparkleFactor
   }
 
   CursorSparkler.prototype.onAnimationFrame = function(time) {
@@ -170,21 +205,47 @@
 
   Sparkle.prototype.render = function(time) {
     var step = normalize(time, this.options.startTime, this.options.startTime + this.options.duration)
-    var x = Math.sin(this.options.direction) * this.options.distance * step
-    var y = Math.cos(this.options.direction) * this.options.distance * step
+    var x = this.options.startX + Math.sin(this.options.direction) * this.options.distance * step
+    var y = this.options.startY + Math.cos(this.options.direction) * this.options.distance * step
     this.el.style.opacity = 1 - step
-    this.el.style.transform = 'translate3d(' + x + 'px, ' + -y + 'px, 0)'
+    this.el.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0)'
   }
 
   exports.CursorSparkler = CursorSparkler  
   exports.Sparkle = Sparkle  
   exports.domready = domready
 
-  var sparkler = exports.sparkler = new CursorSparkler({
-    window: window
-  })
+  if ('chrome' in window && window.chrome.storage) {
+    return chrome.storage.sync.get(null, function(storage) {
+      var options = { window: window }
 
-  domready(window, function() {
-    sparkler.listen()
-  })
+      for (var key in storage) {
+        options[key] = storage[key]
+      }
+
+      var sparkler = exports.sparkler = new CursorSparkler(options)
+
+      domready(window, function() {
+        sparkler.listen()
+      })
+
+      chrome.storage.onChanged.addListener(function(changes, namespace) {
+        for (key in changes) {
+          var storageChange = changes[key];
+          console.log('setting', key, storageChange.newValue)
+          sparkler.options[key] = storageChange.newValue
+        }
+      })
+    })
+  } else {
+    var sparkler = exports.sparkler = new CursorSparkler({
+      window: window
+    })
+
+    domready(window, function() {
+      sparkler.listen()
+    })
+  }
+
+
 })(window.cfAppSparkle = {})

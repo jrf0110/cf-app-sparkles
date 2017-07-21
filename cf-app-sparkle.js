@@ -179,11 +179,9 @@
   exports.CursorSparkler = CursorSparkler  
   exports.Sparkle = Sparkle  
   exports.domready = domready
-
-  // Not being consumed by CF Apps
-  // if (!window.INSTALL) return
     
   var options = { window: window }
+
   if (typeof window.INSTALL_OPTIONS === 'object') {
     for (var key in INSTALL_OPTIONS) {
       options[key] = INSTALL_OPTIONS[key]

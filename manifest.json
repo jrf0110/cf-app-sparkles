@@ -3,11 +3,21 @@
 
   "name": "Cursor Sparkles",
   "description": "Adds sparkles to your cursor",
-  "version": "1.1",
+  "version": "1.2",
 
   "content_scripts": [
-    { "matches": ["http://*/*", "https://*/*"]
-    , "js": ["sparkles.js"]
+    { "matches": ["http://*/*", "https://*/*"],
+      "js": ["sparkles.js"]
     }
-  ]
+  ],
+
+  "permissions": [
+    "storage"
+  ],
+
+  "browser_action": {
+    "default_title": "Sparkles",
+    "default_icon": "sparkles-logo.png",
+    "default_popup": "popup.html"
+  }
 }

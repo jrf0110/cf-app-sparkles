@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sparkles</title>
+    <style>
+      .sparkle-popup {
+        width: 300px;
+      }
+
+      .form-controls {
+        display: table;
+        width: 100%;
+      }
+
+      .form-control {
+        display: table-row;
+      }
+
+      label, .form-control-input {
+        display: table-cell;
+        padding: 10px;
+        vertical-align: middle;
+      }
+
+      label {
+        width: 30%;
+      }
+
+      .form-control-input {
+        width: 70%;
+        text-align: right;
+      }
+
+      .form-control-input input,
+      .form-control-input select {
+        width: 100%;
+      }
+
+      .form-controls > :first-child ~ .form-control label,
+      .form-controls > :first-child ~ .form-control .form-control-input {
+        border-top: solid 1px #ccc;
+      }
+    </style>
+    <script src="popup.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
