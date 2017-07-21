@@ -45,8 +45,8 @@
     this.window = options.window
     this.el = this.window.document.createElement('div')
     this.el.style.position = 'absolute'
-    this.el.style.top = '-1px'
-    this.el.style.left = '-1px'
+    this.el.style.top = -this.options.sparkleSizeRange[1] + 'px'
+    this.el.style.left = -this.options.sparkleSizeRange[1] + 'px'
     this.el.style.zIndex = 10000
     this.el.style.pointerEvents = 'none'
     this.el.style.width = '1px'
@@ -131,12 +131,18 @@
     var sDuration = options.sparkleDurationRange
     var sDistance = options.sparkleDistanceRange
     var sSize = options.sparkleSizeRange
+    var startX = options.mode === CursorSparkler.modes.trail ? this.x : 0
+    var startY = options.mode === CursorSparkler.modes.trail ? this.y : 0
+
+    // Account for the offset to hide the container
+    startX += options.sparkleSizeRange[1]
+    startY += options.sparkleSizeRange[1]
 
     return new Sparkle({
       window: this.window,
       startTime: startTime,
-      startX: options.mode === CursorSparkler.modes.trail ? this.x : 0,
-      startY: options.mode === CursorSparkler.modes.trail ? this.y : 0,
+      startX: startX,
+      startY: startY,
       duration: getRandomInt(sDuration[0], sDuration[1] / sf),
       distance: getRandomInt(sDistance[0], sDistance[1] * (sf === 1 ? 1 : sf / 4)),
       size: getRandomInt(sSize[0], sSize[1] * (sf === 1 ? 1 : sf / 3))
