@@ -37,9 +37,6 @@
     options = options || {}
     options.numSparkles = options.numSparkles || 20
     options.sparkleFactor = 1
-    options.sparkleDurationRange = [50, 500]
-    options.sparkleDistanceRange = [40, 100]
-    options.sparkleSizeRange = [1, 5]
     this.options = options
     this.window = options.window
     this.el = this.window.document.createElement('div')
@@ -102,16 +99,12 @@
   CursorSparkler.prototype.sparkle = function(startTime) {
     var options = this.options
     var sf = options.sparkleFactor
-    var sDuration = options.sparkleDurationRange
-    var sDistance = options.sparkleDistanceRange
     var sSize = options.sparkleSizeRange
 
     return new Sparkle({
       window: this.window,
       startTime: startTime,
-      duration: getRandomInt(sDuration[0], sDuration[1] / sf),
-      distance: getRandomInt(sDistance[0], sDistance[1] * (sf === 1 ? 1 : sf / 4)),
-      size: getRandomInt(sSize[0], sSize[1] * (sf === 1 ? 1 : sf / 3))
+      sparkleFactor: options.sparkleFactor,
     })
   }
 
@@ -137,10 +130,14 @@
 
   function Sparkle(options) {
     options = options || {}
-    options.duration = options.duration || getRandomInt(50, 500)
+    options.sparkleDurationRange = options.sparkleDurationRange || [50, 500]
+    options.sparkleDistanceRange = options.sparkleDistanceRange || [40, 100]
+    options.sparkleSizeRange = options.sparkleSizeRange || [1, 5]
+    var sf = options.sparkleFactor = options.sparkleFactor || 1
+    options.duration = options.duration || getRandomInt(sDuration[0], sDuration[1] / sf),
+    options.distance = options.distance || getRandomInt(sDistance[0], sDistance[1] * (sf === 1 ? 1 : sf / 4)),
+    options.size = options.size || getRandomInt(sSize[0], sSize[1] * (sf === 1 ? 1 : sf / 3))
     options.direction = options.direction || getRandomFloat(0, Math.PI * 2)
-    options.distance = options.distance || getRandomInt(40, 100)
-    options.size = options.size || getRandomInt(1, 5)
     options.color = options.color || Sparkle.getFantasticColor()
     options.startTime = options.startTime || 0
 
@@ -174,6 +171,17 @@
     var y = Math.cos(this.options.direction) * this.options.distance * step
     this.el.style.opacity = 1 - step
     this.el.style.transform = 'translate3d(' + x + 'px, ' + -y + 'px, 0)'
+  }
+
+  function CircularSparkle(options) {
+    options = options || {}
+    Sparkle.call(this, options)
+  }
+
+  CircularSparkle.prototype.destroy = Sparkle.prototype.destroy
+
+  CircularSparkle.prototype.render = function() {
+
   }
 
   exports.CursorSparkler = CursorSparkler  
